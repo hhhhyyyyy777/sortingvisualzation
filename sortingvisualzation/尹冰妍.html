@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>尹冰妍 - 快速排序可视化</title>
+    <style>
+        /* 共享CSS样式（完整复制自排序可视化工具） */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+        /* 控制区样式 */
+        .control-area { background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        @media (max-width: 600px) { .control-area { flex-direction: column; align-items: center; } }
+        button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        button:disabled { background-color: #CCCCCC; color: #666666; cursor: not-allowed; }
+        button.pause { background-color: #FFC107; color: black; }
+        button.back { background-color: #6B7280; } /* 返回按钮颜色 */
+        button:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5); }
+        button.back:hover:not(:disabled) { box-shadow: 0 2px 8px rgba(107, 114, 128, 0.5); }
+        .speed-control { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
+        label { font-size: 14px; color: #333; }
+        input[type="range"] { width: 150px; height: 8px; -webkit-appearance: none; appearance: none; background: #ddd; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #4CAF50; cursor: pointer; }
+        .speed-value { font-size: 14px; color: #333; min-width: 60px; text-align: right; }
+        

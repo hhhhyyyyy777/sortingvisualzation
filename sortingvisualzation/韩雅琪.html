@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>韩雅琪 - 冒泡排序可视化</title>
+    <style>
+        /* 共享CSS样式（完整复制自排序可视化工具） */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+        /* 控制区样式 */
+        .control-area { background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        @media (max-width: 600px) { .control-area { flex-direction: column; align-items: center; } }
+        button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        button:disabled { background-color: #CCCCCC; color: #666666; cursor: not-allowed; }
+        button.pause { background-color: #FFC107; color: black; }
+        button.back { background-color: #6B7280; } /* 返回按钮颜色 */
+        button:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5); }
+        button.back:hover:not(:disabled) { box-shadow: 0 2px 8px rgba(107, 114, 128, 0.5); }
+        .speed-control { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
+        label { font-size: 14px; color: #333; }
+        input[type="range"] { width: 150px; height: 8px; -webkit-appearance: none; appearance: none; background: #ddd; border-radius: 4px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #4CAF50; cursor: pointer; }
+        .speed-value { font-size: 14px; color: #333; min-width: 60px; text-align: right; }
+        /* 可视化区样式 */
+        .visualization-area { flex-grow: 1; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; min-height: 300px; position: relative; }
+        .bars-container { display: flex; gap: 5px; width: 100%; max-width: 800px; min-height: 200px; justify-content: center; margin-top: 20px; }
+        .bar { width: 40px; background-color: #4CAF50; border-radius: 4px 4px 0 0; position: relative; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .bar-value { position: absolute; top: -25px; font-size: 14px; font-weight: bold; color: #000; }
+        .bar-index { position: absolute; bottom: -20px; font-size: 12px; color: #666; }
+        .bar.comparing { background: linear-gradient(to bottom, #FF9800, #FF5722); transform: scale(1.1); }
+        .bar.swapping { animation: flash 1s ease-in-out 3; }
+        @keyframes flash { 0%,100% { background-color: #9C27B0; } 50% { background-color: #E040FB; } }
+        .bar.sorted-bubble { background: linear-gradient(to bottom, #4CAF50, #2E7D32); }
+        /* 知识提示区样式 */
+        .tips-area { background-color: rgba(255,255,255,0.8); padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-height: 60px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        .tips-content { font-size: 16px; color: #333; line-height: 1.5; }
+        /* 进度条样式 */
+        .progress-bar-container { width: 100%; max-width: 400px; height: 15px; background-color: #e0e0e0; border-radius: 8px; overflow: hidden; margin: 10px auto; }
+        .progress-bar { height: 100%; background-color: #4CAF50; width: 0; transition: width 0.3s; }
+        
+        /* 新增优化样式 */
+        .bar {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .bar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .bar.comparing {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        .bar.comparing::after {
+            opacity: 1;
+        }
+        
+        .bar.sorted-bubble {
+            animation: sorted-pulse 2s infinite;
+        }
+        
+        @keyframes sorted-pulse {
+            0%, 100% { box-shadow: 0 0 0 rgba(76, 175, 80, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.8); }
+        }
+        
+        .step-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #4CAF50;
+            font-size: 14px;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .complexity-analysis {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            font-size: 16px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-area">
+            <button id="backToMain" class="back">返回主页面</button>
+            <label for="arraySize">数组长度: </label>
+            <input type="range" id="arraySize" min="5" max="20" value="10" step="1">
+            <span id="arraySizeValue">10</span>
+            <button id="generateArray">生成随机数组</button>
+            <button id="bubbleStep">冒泡单步</button>
+            <button id="bubbleAuto">冒泡自动</button>
+            <div class="speed-control">
+                <label for="speedSlider">速度调节</label>
+                <input type="range" id="speedSlider" min="100" max="1000" value="500" step="50">
+                <div class="speed-value" id="speedValue">500 ms/步</div>
+            </div>
+        </div>
+        
+        <div class="visualization-area" id="visualizationArea">
+            <h3>冒泡排序算法演示</h3>
+            <div class="explanation" id="stepExplanation"></div>
+            <div class="bars-container" id="barsContainer"></div>
+            <div class="progress-bar-container" id="progressBarContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <div class="tips-area" id="tipsArea">
+            <div class="tips-content" id="tipsContent">欢迎使用冒泡排序可视化工具，点击'生成随机数组'开始体验</div>
+        </div>
+    </div>
+
+    <script>
+        //--------------------- 课程知识点标注 ---------------------
+        /*
+         * 对应课程：《数据结构与算法》
+         * 章节： "排序算法"
+         * 小节： "冒泡排序"
+         * 知识点：冒泡排序的原理、时间复杂度分析（O(n²)）、动画可视化实现
+         */
+        // --------------------- 代码实现 ---------------------
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const generateArrayBtn = document.getElementById('generateArray');
+            const bubbleStepBtn = document.getElementById('bubbleStep');
+            const bubbleAutoBtn = document.getElementById('bubbleAuto');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedValue = document.getElementById('speedValue');
+            const tipsContent = document.getElementById('tipsContent');
+            const barsContainer = document.getElementById('barsContainer');
+            const progressBar = document.getElementById('progressBar');
+            const visualizationArea = document.getElementById('visualizationArea');
+            const arraySizeSlider = document.getElementById('arraySize');
+            const arraySizeValue = document.getElementById('arraySizeValue');
+            const stepExplanation = document.getElementById('stepExplanation');
+            const backToMainBtn = document.getElementById('backToMain'); // 返回主页面按钮
+
+            // 全局状态变量
+            let array = [];
+            let isGenerating = false;
+            let isSorting = false;
+            let animationSpeed = 500; // ms/步
+            let autoInterval = null; // 自动模式定时器
+            let currentRound = 0;     // 当前轮次
+            let currentStep = 0;      // 当前步骤
+            let totalRounds = 0;      // 总轮次
+
+            // 初始化速度显示
+            speedValue.textContent = `${animationSpeed} ms/步`;
+            
+            // 初始化数组大小显示
+            arraySizeValue.textContent = arraySizeSlider.value;
+
+            // 速度滑块事件
+            speedSlider.addEventListener('input', function() {
+                animationSpeed = parseInt(this.value);
+                speedValue.textContent = `${animationSpeed} ms/步`;
+                showTips(`当前速度：${animationSpeed} ms/步`);
+            });
+            
+            // 数组大小滑块事件
+            arraySizeSlider.addEventListener('input', function() {
+                arraySizeValue.textContent = this.value;
+            });
+
+            // 返回主页面按钮事件
+            backToMainBtn.addEventListener('click', function() {
+                // 此处假设主页面为index.html，可根据实际文件名修改
+                window.location.href = 'index.html';
+            });
+
+            // 生成随机数组
+            generateArrayBtn.addEventListener('click', function() {
+                if (isGenerating || isSorting) return;
+                
+                isGenerating = true;
+                resetUI();
+                
+                // 使用滑块值作为数组长度
+                const length = parseInt(arraySizeSlider.value);
+                array = [];
+                for (let i = 0; i < length; i++) {
+                    array.push(10 + Math.floor(Math.random() * 191)); // 10-200
+                }
+                
+                // 清空并创建条形图
+                barsContainer.innerHTML = '';
+                array.forEach((value, index) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = `${(value / 200) * 200}px`; // 高度比例
+                    bar.dataset.value = value;
+                    bar.dataset.index = index;
+                    
+                    const valueElement = document.createElement('div');
+                    valueElement.className = 'bar-value';
+                    valueElement.textContent = value;
+                    
+                    const indexElement = document.createElement('div');
+                    indexElement.className = 'bar-index';
+                    indexElement.textContent = index;
+                    
+                    bar.appendChild(valueElement);
+                    bar.appendChild(indexElement);
+                    barsContainer.appendChild(bar);
+                    
+                    // 淡入动画
+                    bar.style.opacity = '0';
+                    setTimeout(() => {
+                        bar.style.transition = 'opacity 0.5s';
+                        bar.style.opacity = '1';
+                    }, 50 * index);
+                });
+                
+                totalRounds = array.length - 1; // 冒泡排序总轮次
+                showTips(`已生成${array.length}个随机数（10-200范围），点击'冒泡单步'或'冒泡自动'开始排序`);
+                isGenerating = false;
+                
+                // 启用排序按钮
+                bubbleStepBtn.disabled = false;
+                bubbleAutoBtn.disabled = false;
+            });
+
+            // 冒泡排序 - 单步模式
+            bubbleStepBtn.addEventListener('click', function() {
+                if (!array || array.length <= 1 || isSorting || isGenerating) {
+                    showTips(array.length <= 1 ? '数组长度小于2，无需排序' : '请先生成随机数组！');
+                    return;
+                }
+                
+                isSorting = true;
+                bubbleStepBtn.disabled = true;
+                
+                performBubbleSortStep();
+                
+                setTimeout(() => {
+                    bubbleStepBtn.disabled = false;
+                    isSorting = false;
+                }, animationSpeed);
+            });
+
+            // 冒泡排序 - 单步执行
+            function performBubbleSortStep() {
+                const n = array.length;
+                
+                // 检查排序是否完成
+                if (currentRound >= n - 1) {
+                    finishSorting();
+                    return;
+                }
+                
+                // 计算当前步骤需要比较的元素索引
+                const i = currentStep;
+                const j = currentStep + 1;
+                
+                // 确保索引在有效范围内
+                if (j >= n - currentRound) {
+                    // 完成一轮比较，进入下一轮
+                    currentRound++;
+                    currentStep = 0;
+                    
+                    // 标记本轮最后一个元素为已排序
+                    if (currentRound < n) {
+                        const sortedIndex = n - currentRound;
+                        const sortedBar = getBarByIndex(sortedIndex);
+                        markAsSorted(sortedBar);
+                        
+                        showTips(`冒泡排序：第${currentRound}轮结束，索引${sortedIndex}元素已排序`);
+                        
+                        // 更新进度条
+                        const progress = (currentRound / (n - 1)) * 100;
+                        progressBar.style.width = `${progress}%`;
+                    }
+                    
+                    // 检查排序是否完成
+                    if (currentRound >= n - 1) {
+                        finishSorting();
+                        return;
+                    }
+                    
+                    // 继续执行下一轮的第一步
+                    performBubbleSortStep();
+                    return;
+                }
+                
+                const bar1 = getBarByIndex(i);
+                const bar2 = getBarByIndex(j);
+                
+                // 高亮比较的元素
+                highlightComparing(bar1, bar2);
+                
+                // 更新步骤说明
+                const explanation = `
+                    <div class="step-info">
+                        <h4>当前步骤：第${currentRound+1}轮，比较索引${i}和${j}</h4>
+                        <p>比较规则：如果左侧元素(${array[i]}) > 右侧元素(${array[j]})，则交换</p>
+                        <p class="result">结果：${array[i] > array[j] ? '交换' : '不交换'}</p>
+                    </div>
+                `;
+                stepExplanation.innerHTML = explanation;
+                
+                // 执行比较和可能的交换
+                if (array[i] > array[j]) {
+                    // 交换元素
+                    [array[i], array[j]] = [array[j], array[i]];
+                    
+                    // 延迟交换以等待高亮动画完成
+                    setTimeout(() => {
+                        swapBars(bar1, bar2, i, j);
+                        resetBarColor(bar1);
+                        resetBarColor(bar2);
+                    }, animationSpeed / 2);
+                    
+                    showTips(`冒泡排序：第${currentRound + 1}轮第${currentStep + 1}步，交换索引${i}和${j}元素（${array[j]}>${array[i]}）`);
+                } else {
+                    // 不交换
+                    setTimeout(() => {
+                        resetBarColor(bar1);
+                        resetBarColor(bar2);
+                    }, animationSpeed / 2);
+                    
+                    showTips(`冒泡排序：第${currentRound + 1}轮第${currentStep + 1}步，不交换索引${i}和${j}元素（${array[i]}≤${array[j]}）`);
+                }
+                
+                // 移动到下一步
+                currentStep++;
+                
+                // 检查排序是否完成
+                if (currentRound >= n - 1) {
+                    finishSorting();
+                }
+            }
+
+            // 冒泡排序 - 自动模式
+            bubbleAutoBtn.addEventListener('click', function() {
+                if (!array || array.length <= 1 || isSorting || isGenerating) {
+                    showTips(array.length <= 1 ? '数组长度小于2，无需排序' : '请先生成随机数组！');
+                    return;
+                }
+                
+                if (bubbleAutoBtn.textContent === '冒泡自动') {
+                    // 开始自动排序
+                    isSorting = true;
+                    bubbleAutoBtn.textContent = '暂停';
+                    bubbleAutoBtn.classList.add('pause');
+                    currentRound = 0;
+                    currentStep = 0;
+                    
+                    // 显示进度条
+                    progressBarContainer.style.display = 'block';
+                    progressBar.style.width = '0%';
+                    
+                    // 执行自动排序
+                    autoInterval = setInterval(() => {
+                        if (!isSorting) {
+                            clearInterval(autoInterval);
+                            return;
+                        }
+                        
+                        performBubbleSortStep();
+                        
+                        // 检查排序是否完成
+                        if (currentRound >= array.length - 1) {
+                            clearInterval(autoInterval);
+                            finishSorting();
+                        }
+                    }, animationSpeed);
+                } else {
+                    // 暂停排序
+                    isSorting = false;
+                    bubbleAutoBtn.textContent = '冒泡自动';
+                    bubbleAutoBtn.classList.remove('pause');
+                    clearInterval(autoInterval);
+                }
+            });
+
+            // 完成排序
+            function finishSorting() {
+                isSorting = false;
+                bubbleStepBtn.disabled = false;
+                bubbleAutoBtn.textContent = '冒泡自动';
+                bubbleAutoBtn.classList.remove('pause');
+                clearInterval(autoInterval);
+                
+                // 标记所有元素为已排序
+                array.forEach((_, index) => {
+                    const bar = getBarByIndex(index);
+                    markAsSorted(bar);
+                });
+                
+                showTips('冒泡排序：执行完成');
+                
+                // 显示效率分析
+                const n = array.length;
+                const bubbleSteps = n * (n - 1) / 2;
+                const quickSteps = Math.floor(n * Math.log2(n));
+                
+                const complexityHTML = `
+                    <div class="complexity-analysis">
+                        <h4>算法复杂度分析</h4>
+                        <p>数组长度: <strong>${n}</strong></p>
+                        <p>冒泡排序步骤: <strong>O(n²) = ${bubbleSteps}</strong></p>
+                        <p>快速排序步骤: <strong>O(n log n) ≈ ${quickSteps}</strong></p>
+                        <p>结论: 对于大规模数据，冒泡排序效率远低于快速排序</p>
+                    </div>
+                `;
+                visualizationArea.insertAdjacentHTML('beforeend', complexityHTML);
+            }
+
+            // 获取指定索引的条形图元素
+            function getBarByIndex(index) {
+                return barsContainer.querySelector(`.bar[data-index="${index}"]`);
+            }
+
+            // 高亮比较中的元素
+            function highlightComparing(bar1, bar2) {
+                bar1.classList.add('comparing');
+                bar2.classList.add('comparing');
+            }
+
+            // 标记为已排序
+            function markAsSorted(bar) {
+                bar.classList.add('sorted-bubble');
+            }
+
+            // 交换两个条形图的位置
+            function swapBars(bar1, bar2, index1, index2) {
+                // 更新DOM元素的data-index属性
+                bar1.dataset.index = index2;
+                bar2.dataset.index = index1;
+                
+                // 更新索引显示
+                bar1.querySelector('.bar-index').textContent = index2;
+                bar2.querySelector('.bar-index').textContent = index1;
+                
+                // 交换位置（使用Flexbox的order属性）
+                bar1.style.order = index2;
+                bar2.style.order = index1;
+                
+                // 碰撞反馈动画
+                bar1.style.transform = 'scale(0.95)';
+                bar2.style.transform = 'scale(0.95)';
+                
+                setTimeout(() => {
+                    bar1.style.transform = 'scale(1)';
+                    bar2.style.transform = 'scale(1)';
+                }, 100);
+            }
+
+            // 重置条形图颜色
+            function resetBarColor(bar) {
+                bar.classList.remove('comparing', 'swapping');
+            }
+
+            // 显示提示信息
+            function showTips(text) {
+                tipsContent.textContent = text;
+                setTimeout(() => {
+                    if (tipsContent.textContent === text) {
+                        tipsContent.textContent = '';
+                    }
+                }, 3000);
+            }
+
+            // 重置UI
+            function resetUI() {
+                barsContainer.innerHTML = '';
+                tipsContent.textContent = '';
+                progressBar.style.width = '0%';
+                progressBarContainer.style.display = 'none';
+                stepExplanation.innerHTML = '';
+                
+                // 移除效率分析
+                const complexityDiv = visualizationArea.querySelector('.complexity-analysis');
+                if (complexityDiv) {
+                    visualizationArea.removeChild(complexityDiv);
+                }
+                
+                // 重置按钮状态
+                bubbleStepBtn.disabled = true;
+                bubbleAutoBtn.disabled = true;
+                bubbleAutoBtn.textContent = '冒泡自动';
+                bubbleAutoBtn.classList.remove('pause');
+                clearInterval(autoInterval);
+                isSorting = false;
+                currentRound = 0;
+                currentStep = 0;
+            }
+        });
+    </script>
+</body>
+</html>
