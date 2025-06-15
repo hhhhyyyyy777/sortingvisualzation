@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>快速排序算法 - 课程作业</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>快速排序算法演示</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
         }
         
         body {
@@ -48,7 +47,7 @@
             font-size: 1.2rem;
             opacity: 0.9;
             max-width: 800px;
-            margin: 0 auto;
+            margin: 10px auto 0;
         }
         
         .content-wrapper {
@@ -84,10 +83,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        
-        h2 i {
-            color: #e74c3c;
         }
         
         .info-section {
@@ -202,6 +197,10 @@
             background: linear-gradient(to top, #f39c12, #d35400);
         }
         
+        .bar.swapping {
+            background: linear-gradient(to top, #9b59b6, #8e44ad);
+        }
+        
         .controls {
             display: flex;
             gap: 15px;
@@ -309,12 +308,48 @@
             background: linear-gradient(to top, #f39c12, #d35400);
         }
         
+        .swapping-color {
+            background: linear-gradient(to top, #9b59b6, #8e44ad);
+        }
+        
         footer {
             text-align: center;
             padding: 20px;
             background: #2c3e50;
             color: white;
             border-top: 1px solid #34495e;
+        }
+        
+        .algorithm-steps {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .algorithm-steps h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .steps-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            list-style-type: none;
+        }
+        
+        .step-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+        
+        .step-card h4 {
+            color: #2980b9;
+            margin-bottom: 8px;
         }
         
         @media (max-width: 768px) {
@@ -325,26 +360,30 @@
             .algorithm-info, .visualization {
                 min-width: 100%;
             }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-sort-amount-down"></i> 快速排序算法</h1>
+            <h1>快速排序算法演示</h1>
             <p class="subtitle">分治法策略的高效排序算法 - 课程作业实现与可视化</p>
         </header>
         
         <div class="content-wrapper">
             <div class="algorithm-info">
                 <div class="info-section">
-                    <h2><i class="fas fa-info-circle"></i> 算法描述</h2>
+                    <h2>算法描述</h2>
                     <p>快速排序是一种高效的排序算法，采用<strong>分治法</strong>策略。它通过选择一个"基准"元素，将数组分为两个子数组：小于基准的元素和大于基准的元素，然后递归地对子数组进行排序。</p>
                     <p>快速排序由 Tony Hoare 于1959年发明，是实际应用中最常用的排序算法之一，因为它在大多数情况下具有出色的性能。</p>
                 </div>
                 
                 <div class="info-section">
-                    <h2><i class="fas fa-tachometer-alt"></i> 性能分析</h2>
+                    <h2>性能分析</h2>
                     <table class="complexity-table">
                         <tr>
                             <th>情况</th>
@@ -371,7 +410,7 @@
                 </div>
                 
                 <div class="info-section">
-                    <h2><i class="fas fa-lightbulb"></i> 优化策略</h2>
+                    <h2>优化策略</h2>
                     <ul>
                         <li><strong>随机选择基准：</strong>避免最坏情况发生</li>
                         <li><strong>三数取中法：</strong>选择首、中、尾三个元素的中值作为基准</li>
@@ -380,10 +419,32 @@
                         <li><strong>迭代法替代递归：</strong>使用栈模拟递归过程</li>
                     </ul>
                 </div>
+                
+                <div class="algorithm-steps">
+                    <h3>算法步骤</h3>
+                    <ul class="steps-list">
+                        <li class="step-card">
+                            <h4>步骤 1</h4>
+                            <p>从数组中选择一个元素作为基准(pivot)</p>
+                        </li>
+                        <li class="step-card">
+                            <h4>步骤 2</h4>
+                            <p>重新排列数组，所有小于基准的元素移到基准左侧，大于基准的元素移到右侧</p>
+                        </li>
+                        <li class="step-card">
+                            <h4>步骤 3</h4>
+                            <p>递归地对基准左侧的子数组进行排序</p>
+                        </li>
+                        <li class="step-card">
+                            <h4>步骤 4</h4>
+                            <p>递归地对基准右侧的子数组进行排序</p>
+                        </li>
+                    </ul>
+                </div>
             </div>
             
             <div class="visualization">
-                <h2><i class="fas fa-eye"></i> 算法可视化</h2>
+                <h2>算法可视化</h2>
                 
                 <div class="visualization-area" id="visualization">
                     <!-- 柱状图将由JavaScript生成 -->
@@ -391,13 +452,13 @@
                 
                 <div class="controls">
                     <button class="start" id="startBtn">
-                        <i class="fas fa-play"></i> 开始排序
+                        开始排序
                     </button>
                     <button class="reset" id="resetBtn">
-                        <i class="fas fa-redo"></i> 重置数组
+                        重置数组
                     </button>
                     <button id="stepBtn">
-                        <i class="fas fa-step-forward"></i> 单步执行
+                        单步执行
                     </button>
                     
                     <div class="slider-container">
@@ -410,7 +471,7 @@
                 </div>
                 
                 <div class="status" id="status">
-                    <i class="fas fa-info-circle"></i> 状态: 等待开始排序
+                    状态: 等待开始排序
                 </div>
                 
                 <div class="legend">
@@ -430,10 +491,14 @@
                         <div class="legend-color compared-color"></div>
                         <span>比较元素</span>
                     </div>
+                    <div class="legend-item">
+                        <div class="legend-color swapping-color"></div>
+                        <span>交换元素</span>
+                    </div>
                 </div>
                 
                 <div class="info-section">
-                    <h2><i class="fas fa-code"></i> 代码实现</h2>
+                    <h2>代码实现</h2>
                     <div class="code-block">
                         <span class="code-keyword">function</span> <span class="code-function">quickSort</span>(arr, low, high) {<br>
                         &nbsp;&nbsp;<span class="code-keyword">if</span> (low &lt; high) {<br>
@@ -518,7 +583,7 @@
             
             // 更新状态信息
             function updateStatus(message) {
-                status.innerHTML = `<i class="fas fa-info-circle"></i> 状态: ${message}`;
+                status.textContent = `状态: ${message}`;
             }
             
             // 快速排序算法
@@ -556,8 +621,8 @@
                         
                         // 标记交换的元素
                         if (i !== j) {
-                            bars[i].classList.add('partition');
-                            bars[j].classList.add('partition');
+                            bars[i].classList.add('swapping');
+                            bars[j].classList.add('swapping');
                             updateStatus(`交换元素 ${arr[i]} 和 ${arr[j]}`);
                             await sleep(animationSpeed);
                         }
@@ -567,9 +632,11 @@
                         updateBars();
                         
                         // 移除标记
-                        bars[i].classList.remove('partition');
-                        bars[j].classList.remove('partition');
-                        await sleep(animationSpeed);
+                        if (i !== j) {
+                            bars[i].classList.remove('swapping');
+                            bars[j].classList.remove('swapping');
+                            await sleep(animationSpeed);
+                        }
                     }
                     
                     // 移除比较标记
@@ -626,7 +693,7 @@
                 
                 // 添加完成动画
                 for (let i = 0; i < bars.length; i++) {
-                    bars[i].style.background = 'linear-gradient(to top, #2ecc71, #27ae60)';
+                    bars[i].classList.add('partition');
                     await sleep(50);
                 }
                 
