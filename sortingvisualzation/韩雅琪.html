@@ -9,11 +9,10 @@
         body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f5f5f5; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px; }
         /* 控制区样式 */
-        .control-area { background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .control-area { background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; position: relative; }
         @media (max-width: 600px) { .control-area { flex-direction: column; align-items: center; } }
         button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
         button:disabled { background-color: #CCCCCC; color: #666666; cursor: not-allowed; }
-        button.pause { background-color: #FFC107; color: black; }
         button.back { background-color: #6B7280; } /* 返回按钮颜色 */
         button:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 2px 8px rgba(76, 175, 80, 0.5); }
         button.back:hover:not(:disabled) { box-shadow: 0 2px 8px rgba(107, 114, 128, 0.5); }
@@ -96,6 +95,102 @@
             font-size: 16px;
             width: 100%;
         }
+
+        /* 帮助图标和面板样式 */
+        .help-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #2196F3;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .help-button:hover {
+            background-color: #0b7dda;
+            transform: scale(1.05);
+        }
+        
+        .help-panel {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 10px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            width: 300px;
+        }
+        
+        .help-panel.show {
+            display: block;
+        }
+        
+        /* 算法描述和代码展示区样式 */
+        .algorithm-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            border-left: 5px solid #4CAF50;
+            transition: all 0.3s;
+        }
+        
+        .algorithm-section:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .algorithm-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .algorithm-code {
+            background-color: #f7f7f7;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            margin-top: 10px;
+            line-height: 1.5;
+            position: relative;
+            overflow: auto;
+            max-height: 300px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .algorithm-code::before {
+            content: "JavaScript";
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 0 0 0 4px;
+        }
+        
+        .algorithm-description {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -113,14 +208,53 @@
                 <input type="range" id="speedSlider" min="100" max="1000" value="500" step="50">
                 <div class="speed-value" id="speedValue">500 ms/步</div>
             </div>
+            <div class="help-button" id="helpIcon">?</div>
+            <div class="help-panel" id="helpPanel">
+                <h3>操作指南</h3>
+                <ol>
+                    <li>点击"生成随机数组"创建数据</li>
+                    <li>选择排序算法和模式：
+                        <ul>
+                            <li>单步模式：逐步观察算法过程</li>
+                            <li>自动模式：自动执行排序</li>
+                        </ul>
+                    </li>
+                    <li>使用速度滑块调整动画速度</li>
+                    <li>使用"步骤回退"重新观察关键步骤</li>
+                    <li>切换算法比较不同排序方法效率</li>
+                </ol>
+            </div>
         </div>
         
         <div class="visualization-area" id="visualizationArea">
-            <h3>冒泡排序算法演示</h3>
+            <h3>冒泡排序算法演示-韩雅琪-202400203070</h3>
             <div class="explanation" id="stepExplanation"></div>
             <div class="bars-container" id="barsContainer"></div>
             <div class="progress-bar-container" id="progressBarContainer">
                 <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <div class="algorithm-section">
+            <h3>算法描述</h3>
+            <div class="algorithm-description">
+                <p>冒泡排序是一种简单的排序算法。它重复地走访过要排序的数列，一次比较两个元素，如果它们的顺序错误就把它们交换过来。走访数列的工作是重复地进行直到没有再需要交换，也就是说该数列已经排序完成。这个算法的名字由来是因为越小的元素会经由交换慢慢“浮”到数列的顶端。</p>
+                <p>冒泡排序的时间复杂度是O(n²)，因此它并不适合大规模数据的排序。不过，它的实现非常简单，是学习排序算法的良好起点。</p>
+            </div>
+            <h3>基础代码实现</h3>
+            <div class="algorithm-code">
+function bubbleSort(arr) {
+    const n = arr.length;
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                // 交换 arr[j] 和 arr[j+1]
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+            }
+        }
+    }
+    return arr;
+}
             </div>
         </div>
         
@@ -153,6 +287,8 @@
             const arraySizeValue = document.getElementById('arraySizeValue');
             const stepExplanation = document.getElementById('stepExplanation');
             const backToMainBtn = document.getElementById('backToMain'); // 返回主页面按钮
+            const helpIcon = document.getElementById('helpIcon');
+            const helpPanel = document.getElementById('helpPanel');
 
             // 全局状态变量
             let array = [];
@@ -186,6 +322,11 @@
             backToMainBtn.addEventListener('click', function() {
                 // 此处假设主页面为index.html，可根据实际文件名修改
                 window.location.href = 'index.html';
+            });
+
+            // 帮助图标点击事件
+            helpIcon.addEventListener('click', function() {
+                helpPanel.classList.toggle('show');
             });
 
             // 生成随机数组
@@ -357,48 +498,44 @@
                     return;
                 }
                 
-                if (bubbleAutoBtn.textContent === '冒泡自动') {
-                    // 开始自动排序
-                    isSorting = true;
-                    bubbleAutoBtn.textContent = '暂停';
-                    bubbleAutoBtn.classList.add('pause');
-                    currentRound = 0;
-                    currentStep = 0;
+                // 开始自动排序
+                isSorting = true;
+                bubbleAutoBtn.disabled = true;
+                currentRound = 0; // 重置当前轮次
+                currentStep = 0;  // 重置当前步骤
+                
+                // 显示进度条
+                progressBarContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                
+                // 清除所有条形图的高亮状态
+                const bars = barsContainer.querySelectorAll('.bar');
+                bars.forEach(bar => {
+                    resetBarColor(bar);
+                });
+                
+                // 执行自动排序
+                autoInterval = setInterval(() => {
+                    if (!isSorting) {
+                        clearInterval(autoInterval);
+                        return;
+                    }
                     
-                    // 显示进度条
-                    progressBarContainer.style.display = 'block';
-                    progressBar.style.width = '0%';
+                    performBubbleSortStep();
                     
-                    // 执行自动排序
-                    autoInterval = setInterval(() => {
-                        if (!isSorting) {
-                            clearInterval(autoInterval);
-                            return;
-                        }
-                        
-                        performBubbleSortStep();
-                        
-                        // 检查排序是否完成
-                        if (currentRound >= array.length - 1) {
-                            clearInterval(autoInterval);
-                            finishSorting();
-                        }
-                    }, animationSpeed);
-                } else {
-                    // 暂停排序
-                    isSorting = false;
-                    bubbleAutoBtn.textContent = '冒泡自动';
-                    bubbleAutoBtn.classList.remove('pause');
-                    clearInterval(autoInterval);
-                }
+                    // 检查排序是否完成
+                    if (currentRound >= array.length - 1) {
+                        clearInterval(autoInterval);
+                        finishSorting();
+                    }
+                }, animationSpeed);
             });
 
             // 完成排序
             function finishSorting() {
                 isSorting = false;
                 bubbleStepBtn.disabled = false;
-                bubbleAutoBtn.textContent = '冒泡自动';
-                bubbleAutoBtn.classList.remove('pause');
+                bubbleAutoBtn.disabled = false;
                 clearInterval(autoInterval);
                 
                 // 标记所有元素为已排序
@@ -489,7 +626,6 @@
                 progressBarContainer.style.display = 'none';
                 stepExplanation.innerHTML = '';
                 
-                // 移除效率分析
                 const complexityDiv = visualizationArea.querySelector('.complexity-analysis');
                 if (complexityDiv) {
                     visualizationArea.removeChild(complexityDiv);
@@ -498,8 +634,6 @@
                 // 重置按钮状态
                 bubbleStepBtn.disabled = true;
                 bubbleAutoBtn.disabled = true;
-                bubbleAutoBtn.textContent = '冒泡自动';
-                bubbleAutoBtn.classList.remove('pause');
                 clearInterval(autoInterval);
                 isSorting = false;
                 currentRound = 0;
@@ -508,4 +642,4 @@
         });
     </script>
 </body>
-</html>
+</html>    
